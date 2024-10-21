@@ -44,11 +44,11 @@ The following papers were considered for my project idea:
     - Label the tokens for hallucination detection
     - Manual control of sample
 
-- Implementation of BERT model architecture (+ integrationg SEPs) *15 to 20 hours + 5 t0 15 hours (due to lack of experience)*
+- Implementation of BERT model architecture (+ integrationg SEPs) *15 to 20 hours + 5 to 15 hours (due to lack of experience)*
     - Setup the Model
     - Data preperation (data loading, tokenization etc.) 
     - token-level classification setup
-    - Fine-tuning setuo
+    - Fine-tuning setup
     - (Implement SEPs for semantic entropy calculation)
     - (Implement classification head)
 
