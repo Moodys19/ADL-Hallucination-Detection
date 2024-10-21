@@ -6,7 +6,7 @@ Large Language Models are increasingly becoming a part of our daily lives and ar
 
 ## Approach
 
-### Data Preperation
+### Data Preparation
 For the project, I intend to use the [CNN/Daily Mail (CNNDM) dataset](https://huggingface.co/datasets/RUCAIBox/Summarization/blob/main/cnndm.tgz), which contains full-length news articles and corresponding summaries. This dataset provides the foundation for training and evaluating the model. For each article, I intend to generate hallucinated summaries using a pre-trained LLM, such as [LLAMA 3.2](https://www.llama.com/) or [Gemini Nano](https://ai.google.dev/gemini-api/docs?hl=de), by introducing factual inconsistencies or arbitrary content. I also intend to task the LLM to label the created summaries at the token level: tokens that remain factual will be labeled as `O`, while hallucinated tokens will be labeled as `B-HALLUCINATED` (beginning of a hallucinated phrase) and `I-HALLUCINATED` (inside a hallucinated phrase). Of course, creating these labels using the LLM is not optimal due to potential mislabelings, hallucinations, and general errors; but manual labeling would go beyond the time frame planned for this project. In order to mitigate the risks mentioned, I intend to manually check a sample of the created token-labelings and their corresponding hallucinated summaries. The final decision on which LLM I will use depends on resource constraints as well as initial experiments.
 
 In the case that using the CNN/Daily Mail dataset is not feasible, I intend to use the [XSUM dataset](https://huggingface.co/datasets/RUCAIBox/Summarization/tree/main), which consists of BBC articles paired with single-sentence summaries. The shorter summaries could potentially reduce training time and provide a better overview during the data preparation step, helping to assess whether the LLM creates reasonably hallucinated summaries and accurate token labelings. However, a potential downside of using shorter summaries is the risk of oversimplifying the task, which may cause the model to underperform when handling more complex and longer summaries. For this reason, I intend to keep the XSUM dataset as a fallback option, only to be used if, as mentioned, working with the CNN/Daily Mail dataset proves infeasible.
@@ -38,7 +38,7 @@ The following papers were considered for my project idea:
 ## Work Breakdown
 **Disclaimer**: This timetable is purely theoretical, as I have limited experience with a project of this scope and therefore cannot provide a fully reliable time estimate. Some tasks may take less time, while others may require significantly more.
 
-- Dataset Preperation *4-8 hours*
+- Dataset preparation *4-8 hours*
     - Decide on and get access for LLM
     - Prepare hallucinated summaries
     - Label the tokens for hallucination detection
@@ -46,7 +46,7 @@ The following papers were considered for my project idea:
 
 - Implementation of BERT model architecture (+ integrationg SEPs) *15 to 20 hours + 5 to 15 hours (due to lack of experience)*
     - Setup the Model
-    - Data preperation (data loading, tokenization etc.) 
+    - Data preparation (data loading, tokenization etc.) 
     - token-level classification setup
     - Fine-tuning setup
     - (Implement SEPs for semantic entropy calculation)
@@ -62,7 +62,7 @@ The following papers were considered for my project idea:
 
 - Final Report *5-7 hours*
 
-- Final Presentation Preperation *5 hours*
+- Final Presentation preparation *5 hours*
     - Concept/script creation
     - Research on how to film and edit videos
     - Finding courage
