@@ -12,9 +12,9 @@ library(tidyverse)
 ######### Data Loading ----
 
 
-train_fake_raw <- read.csv("fake_summary/train_hallucinated.csv")
-test_fake_raw <- read.csv("fake_summary/test_hallucinated.csv")
-valid_fake_raw <- read.csv("fake_summary/val_hallucinated.csv")
+train_fake_raw <- read.csv("fake_summary/train_hallucinated_alt.csv")
+test_fake_raw <- read.csv("fake_summary/test_hallucinated_alt.csv")
+valid_fake_raw <- read.csv("fake_summary/val_hallucinated_alt.csv")
 
 full_data <- rbind(train_fake_raw, "BEGINN_TEST",
                    test_fake_raw, "BEGINN_VAL", 
@@ -48,7 +48,7 @@ full_data <- full_data %>%   mutate(
 
 ######### Check Special Cases ----
 
-check_refusal <- full_data %>%
+full_data <- full_data %>%
   mutate(
     # ACHTUNG das FALSE wird zu einem string
     fake_summary = ifelse(grepl("I cannot", fake_summary, ignore.case = TRUE), FALSE, fake_summary), 
@@ -92,6 +92,34 @@ check_tokens <- full_data %>%
 
 write.csv2(check_tokens, file = "fake_summary/check_tokens.csv")
 
+
+
+full_data <- full_data %>%
+  mutate(
+    
+    fake_summary = gsub("E\\[hallucinated", "\\[E-hallucinated", fake_summary),
+    fake_summary = gsub("B\\[hallucinated", "\\[B-hallucinated", fake_summary),
+    
+    
+    fake_summary = gsub(" B-hallucinated", "B-hallucinated", fake_summary),
+    fake_summary = gsub("B-hallucinated ", "B-hallucinated", fake_summary),
+    fake_summary = gsub(" E-hallucinated", "E-hallucinated", fake_summary),
+    fake_summary = gsub("E-hallucinated ", "E-hallucinated", fake_summary),
+    
+    fake_summary = gsub("\\/E-hallucinated", "E-hallucinated", fake_summary),
+    fake_summary = gsub("\\/B-hallucinated", "B-hallucinated", fake_summary),
+    
+    # TODO
+    
+    fake_summary = gsub("(?<!\\[)E-hallucinated", "[E-hallucinated", fake_summary, perl = TRUE),
+    fake_summary = gsub("E-hallucinated(?!\\])", "E-hallucinated]", fake_summary, perl = TRUE),
+    fake_summary = gsub("(?<!\\[)B-hallucinated", "[B-hallucinated", fake_summary, perl = TRUE),
+    fake_summary = gsub("B-hallucinated(?!\\])", "B-hallucinated]", fake_summary, perl = TRUE),
+    
+    fake_summary_base = gsub("\\[B-hallucinated\\]", "", fake_summary), 
+    fake_summary_base = gsub("\\[E-hallucinated\\]", "", fake_summary_base),
+    
+  )
 
 ######### Join Data ----
 
@@ -138,5 +166,48 @@ valid <- load_src_tgt_file(
   file_src = "subsamples/valid_src_1000.src",
   file_tgt = "subsamples/valid_tgt_1000.tgt"
 )
+
+
+train_fake <- full_data[1:(which(full_data$fake_summary == "BEGINN_TEST") - 1), ]
+test_fake <- full_data[(which(full_data$fake_summary == "BEGINN_TEST") + 1):(which(full_data$fake_summary == "BEGINN_VAL") - 1), ]
+valid_fake <- full_data[(which(full_data$fake_summary == "BEGINN_VAL") + 1):nrow(full_data), ]
+
+nrow(train_fake) == nrow(train_fake_raw)
+nrow(test_fake) == nrow(test_fake_raw)
+nrow(valid_fake) == nrow(valid_fake_raw)
+
+### Train Data
+train_prep <- cbind(train, train_fake) %>%
+  filter(fake_summary != "FALSE") %>%
+  select(-id)
+
+
+train_base <- rbind(
+  train_prep %>% select(src, tgt) %>% mutate(label = 0),
+  train_prep %>% select(src, fake_summary_base) %>% mutate(label = 1) %>% rename(tgt = fake_summary_base)
+)
+
+
+write.csv2(train, "train_data_base.csv")
+
+
+
+
+test <- cbind(test, test_fake) %>%
+  filter(fake_summary != "FALSE") %>%
+  select(-id)
+
+valid <- cbind(test, valid_fake) %>%
+  filter(fake_summary != "FALSE")%>%
+  select(-id)
+
+
+
+
+
+
+
+write.csv2(test, "test_data_clean.csv")
+write.csv2(valid, "valid_data_clean.csv")
 
 

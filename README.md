@@ -3,7 +3,6 @@
 - Im README die folder structure außerhalb des github ordners definieren
 - Requirements file - Vielleicht Kapitel mit dem R file auch
 - welche ERROR METRIC
-    - auc
 ---
 # Assignment 2 - Hacking
 ## Baseline and Project Definition

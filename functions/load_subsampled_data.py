@@ -1,19 +1,18 @@
 import os
 import pandas as pd
-import numpy as np
 
 def load_first_n_rows(n, file_paths):
     """
-    Select the first n rows from src and tgt files for train, test, and valid datasets.
+    Select the first n rows from train, test, and valid datasets stored in CSV files.
 
     Args:
         n (int): Number of rows to select.
         file_paths (dict): Dictionary containing file paths for train, test, and valid datasets.
             Example:
             {
-                "train": {"src": "cnndm/train.src", "tgt": "cnndm/train.tgt"},
-                "test": {"src": "cnndm/test.src", "tgt": "cnndm/test.tgt"},
-                "valid": {"src": "cnndm/valid.src", "tgt": "cnndm/valid.tgt"}
+                "train": "cnndm/train_raw.csv",
+                "test": "cnndm/test_raw.csv",
+                "valid": "cnndm/valid_raw.csv"
             }
 
     Returns:
@@ -25,43 +24,34 @@ def load_first_n_rows(n, file_paths):
     subsamples_dir = "cnndm/subsamples"
     os.makedirs(subsamples_dir, exist_ok=True)
 
-    for key, paths in file_paths.items():
-        # Define output file paths
-        src_output_path = os.path.join(subsamples_dir, f"{key}_src_{n}.src")
-        tgt_output_path = os.path.join(subsamples_dir, f"{key}_tgt_{n}.tgt")
+    for key, file_path in file_paths.items():
+        # Define output file path
+        subset_output_path = os.path.join(subsamples_dir, f"{key}_subset_{n}.csv")
 
-        # Check if files already exist
-        if os.path.exists(src_output_path) and os.path.exists(tgt_output_path):
-            print(f"Subsample files for {key} with {n} rows already exist. Loading them.")
-
-            # Load existing files into DataFrame
-            with open(src_output_path, "r", encoding="utf-8") as src_file:
-                src_lines = src_file.readlines()
-
-            with open(tgt_output_path, "r", encoding="utf-8") as tgt_file:
-                tgt_lines = tgt_file.readlines()
-
-            datasets[key] = pd.DataFrame({"source": [line.strip() for line in src_lines],
-                                          "target": [line.strip() for line in tgt_lines]})
+        # Check if the subset file already exists
+        if os.path.exists(subset_output_path):
+            print(f"Subset file for {key} with {n} rows already exists. Loading it.")
+            
+            # Load the existing subset CSV into a DataFrame
+            datasets[key] = pd.read_csv(subset_output_path, sep=";")
         else:
-            # Read the first n lines from each file
-            src_lines = []
-            tgt_lines = []
+            print(f"Creating subset file for {key} with {n} rows.")
 
-            with open(paths['src'], "r", encoding="utf-8") as src_file:
-                src_lines = [next(src_file).strip() for _ in range(n)]
+            # Load the CSV and select the first n rows
+            df = pd.read_csv(file_path, sep = ";")
+            subset_df = df.iloc[:n]
 
-            with open(paths['tgt'], "r", encoding="utf-8") as tgt_file:
-                tgt_lines = [next(tgt_file).strip() for _ in range(n)]
+            # Save the subset to a new CSV file
+            subset_df.to_csv(subset_output_path, index=False)
 
-            # Create a DataFrame
-            datasets[key] = pd.DataFrame({"source": src_lines, "target": tgt_lines})
-
-            # Save the resulting src and tgt files in the subsamples directory
-            with open(src_output_path, "w", encoding="utf-8") as src_output_file:
-                src_output_file.write("\n".join(src_lines) + "\n")
-
-            with open(tgt_output_path, "w", encoding="utf-8") as tgt_output_file:
-                tgt_output_file.write("\n".join(tgt_lines) + "\n")
+            # Add to the datasets dictionary
+            datasets[key] = subset_df
 
     return datasets
+
+# Example usage
+file_paths_test_val = {
+    "train": "cnndm/train_raw.csv",
+    "test": "cnndm/test_raw.csv",
+    "valid": "cnndm/valid_raw.csv"
+}
