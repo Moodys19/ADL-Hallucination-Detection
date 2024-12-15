@@ -3,3 +3,6 @@ __pycache__/
 
 # ignore the data files
 cnndm/
+
+# ignore apy call
+#functions/call_llama.py
