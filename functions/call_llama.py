@@ -2,6 +2,7 @@ from together import Together #type: ignore
 import sys
 import os
 import time
+import pandas as pd
 
 # Specify the path to the directory containing get_api_key
 external_module_path = "C:/mahmoud uni/TU/WS2024_2025/ADL"
@@ -60,7 +61,7 @@ def generate_chat_completion(
     return response
 
 
-def create_hallucinated_summaries(df, source_col, target_col):
+def create_hallucinated_summaries(df, source_col, target_col, output_file_name):
     """
     Generate hallucinated summaries for each row of the DataFrame using an LLM and save them in a new column.
     
@@ -69,13 +70,25 @@ def create_hallucinated_summaries(df, source_col, target_col):
         source_col (str): The name of the column with the source text.
         target_col (str): The name of the column with the target summaries.
         output_col (str): The name of the column to save hallucinated summaries.
+        output_file_name (str): path + name of the output file - the function saves 
+                                the list automatically after each 250 lines 
     
     Returns:
         pd.DataFrame: The DataFrame with the new column containing hallucinated summaries.
     """
 
-    # Ensure the output column exists
-    #df[output_col] = None
+    # Validate the output_file_name
+    output_dir = os.path.dirname(output_file_name)  # Extract directory from the path
+
+    # If a directory is specified, check if it exists
+    if output_dir and not os.path.exists(output_dir):
+        raise ValueError(f"The directory '{output_dir}' does not exist. Please provide a valid path.")
+
+    # Check if the output_file_name is writable
+    if not output_file_name.endswith(".csv"):
+        raise ValueError("The output file name must end with '.csv'.")
+
+    print("path check")
     # Create an empty list to store the hallucinated summaries
     hallucinated_summaries = []
 
@@ -141,10 +154,15 @@ def create_hallucinated_summaries(df, source_col, target_col):
         # Calculate the time taken for the request
         elapsed_time = time.time() - start_time
 
+        if (index + 1) % 250 == 0 or (index + 1) == total_rows:  # Also save at the last row
+            # This was added after creating the fake summaries in create_fake_summaries.ipynb (15.12)
+            output = pd.DataFrame(hallucinated_summaries, columns=["fake_summary"])
+            output.to_csv(output_file_name, index=False, encoding="utf-8")
+            print(f"\nProgress saved to {output_file_name} after {index + 1} rows.")
+
         # Sleep for the remaining time if necessary
         if elapsed_time < time_per_request:
             time.sleep(time_per_request - elapsed_time)
-        
 
     print("\nProcessing complete!")
     return hallucinated_summaries
