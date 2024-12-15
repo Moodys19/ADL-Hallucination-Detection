@@ -4,35 +4,93 @@
 
 setwd("C:/mahmoud uni/TU/WS2024_2025/ADL/ADL-Hallucination-Detection/cnndm")
 
+rm(list = ls())
 library(tidyverse)
+
+
 
 ######### Data Loading ----
 
 
-train_fake <- read.csv("fake_summary/train_hallucinated.csv")
-test_fake <- read.csv("fake_summary/test_hallucinated.csv")
-#valid_fake <- read.csv("fake_summary/.csv")
+train_fake_raw <- read.csv("fake_summary/train_hallucinated.csv")
+test_fake_raw <- read.csv("fake_summary/test_hallucinated.csv")
+valid_fake_raw <- read.csv("fake_summary/val_hallucinated.csv")
 
+full_data <- rbind(train_fake_raw, "BEGINN_TEST",
+                   test_fake_raw, "BEGINN_VAL", 
+                   valid_fake_raw)
+full_data$id <- 1:nrow(full_data)
 
 ######### Check additional text ----
 
-table(grepl("Here is", train_fake$fake_summary))
+#table(grepl("Here is", train_fake$fake_summary_clean))
 
-check_add_info <- train_fake %>%
+check_add_info <- full_data %>%
   filter(grepl("Here is", fake_summary) | grepl("hallucination", fake_summary)) %>%
   mutate(
-    fake_summary = gsub("^.*Here is the .*?:", "", fake_summary),
-    fake_summary = gsub("^.*Here is a .*?:", "", fake_summary),
+    fake_summary = gsub("Here is the .*?:", "", fake_summary),
+    fake_summary = gsub("Here is a .*?:", "", fake_summary),
+    fake_summary = gsub("However, I made .*", "", fake_summary)
   ) %>%
-  filter(grepl("Here is", fake_summary) | grepl("hallucination", fake_summary))
+  filter(grepl("Here is", fake_summary, ignore.case = TRUE))
+
+
+
+full_data <- full_data %>%   mutate(
+  fake_summary = gsub("^.*Here is the .*?:", "", fake_summary),
+  fake_summary = gsub("^.*Here is a .*?:", "", fake_summary),
+  fake_summary = gsub("However, I made .*", "", fake_summary),
+  fake_summary = gsub("Here's a .*", "", fake_summary),
+  fake_summary = gsub("Here's the .*", "", fake_summary),
+) 
+
+
+
+######### Check Special Cases ----
+
+check_refusal <- full_data %>%
+  mutate(
+    # ACHTUNG das FALSE wird zu einem string
+    fake_summary = ifelse(grepl("I cannot", fake_summary, ignore.case = TRUE), FALSE, fake_summary), 
+    fake_summary = ifelse(grepl("I can't", fake_summary, ignore.case = TRUE), FALSE, fake_summary), 
+    fake_summary = ifelse(grepl("I can’t", fake_summary, ignore.case = TRUE), FALSE, fake_summary)
+  )
 
 
 
 ######### Check Tokens + Remove Tokens for Baseline Model ----
 
+check_tokens <- full_data %>%
+  mutate(
+    
+    fake_summary = gsub("E\\[hallucinated", "\\[E-hallucinated", fake_summary),
+    fake_summary = gsub("B\\[hallucinated", "\\[B-hallucinated", fake_summary),
+    
+    
+    fake_summary = gsub(" B-hallucinated", "B-hallucinated", fake_summary),
+    fake_summary = gsub("B-hallucinated ", "B-hallucinated", fake_summary),
+    fake_summary = gsub(" E-hallucinated", "E-hallucinated", fake_summary),
+    fake_summary = gsub("E-hallucinated ", "E-hallucinated", fake_summary),
+    
+    fake_summary = gsub("\\/E-hallucinated", "E-hallucinated", fake_summary),
+    fake_summary = gsub("\\/B-hallucinated", "B-hallucinated", fake_summary),
+    
+    # TODO
+    
+    fake_summary = gsub("(?<!\\[)E-hallucinated", "[E-hallucinated", fake_summary, perl = TRUE),
+    fake_summary = gsub("E-hallucinated(?!\\])", "E-hallucinated]", fake_summary, perl = TRUE),
+    fake_summary = gsub("(?<!\\[)B-hallucinated", "[B-hallucinated", fake_summary, perl = TRUE),
+    fake_summary = gsub("B-hallucinated(?!\\])", "B-hallucinated]", fake_summary, perl = TRUE),
+    
+    fake_summary_base = gsub("\\[B-hallucinated\\]", "", fake_summary), 
+    fake_summary_base = gsub("\\[E-hallucinated\\]", "", fake_summary_base),
+    
+  ) %>%
+  #filter(grepl("\\[|\\]", fake_summary_base))
+  filter(grepl("halluc", fake_summary_base))
+  
 
-
-
+write.csv2(check_tokens, file = "fake_summary/check_tokens.csv")
 
 
 ######### Join Data ----

@@ -134,7 +134,7 @@ def create_hallucinated_summaries(df, source_col, target_col, output_file_name):
         response = generate_chat_completion(
             model_name="meta-llama/Llama-Vision-Free",
             messages=messages,
-            max_tokens=120,  # Allow room for hallucination
+            max_tokens= 500,  # Allow room for hallucination
             temperature=0.9,
             top_p=0.9,
             top_k=40,

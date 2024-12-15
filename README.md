@@ -3,6 +3,7 @@
 - Im README die folder structure außerhalb des github ordners definieren
 - Requirements file - Vielleicht Kapitel mit dem R file auch
 - welche ERROR METRIC
+    - auc
 ---
 # Assignment 2 - Hacking
 ## Baseline and Project Definition
@@ -25,6 +26,10 @@ For the generation of the hallucinated summary an LLM was used. Between finding 
 #### Data Quality 
 To ensure the quality of the data, I have manually addressed clear inconsistencies in the generated summaries. While this process is highly time-consuming, it is essential to maintain data integrity, as errors from the LLAMA model generating the fake summaries can significantly impact overall data quality and degrade the downstream model's performance. For instance, inconsistencies can arise when the model - against the instructions in the system prompt - outputs additional text such as "Here is a generated fake summary," instead of only producing the hallucinated summary. Additionally, for sensitive topics like violence against children, the model may refuse to generate a summary altogether, in such cases I chose to remove the entry. In a setting with a less tight time frame, I would spend even more time on this step to further investigate and control the types and quality of hallucinations. For this case random samples of the data were checked.
 This analysis was implemented in the `clean_data.R`
+
+TODO MACH DAS NOCH DETALLIERTER
+
+TODO: hier issue mit den Tokens
 
 ## The Baseline Model
 
