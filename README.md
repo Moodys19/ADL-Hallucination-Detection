@@ -27,7 +27,7 @@ To ensure the quality of the data, I have manually addressed clear inconsistenci
 This analysis was implemented in the `clean_data.R`
 
 TODO MACH DAS NOCH DETALLIERTER - das issue mit den Tokens Erklären auch
-
+TODO hier verlieren wir 3 obs für test und valid, manuell rausgesucht weil es spät aufgefallen ist
 
 TODO: hier issue mit den Tokens
 
@@ -48,3 +48,6 @@ Discussion Rolling Window -> vielleicht etwas wo wir sicherstellen dass die chun
 
 
 ## Folder Structure 
+
+
+## Outlook
