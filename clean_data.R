@@ -150,22 +150,10 @@ load_src_tgt_file <- function(file_src, file_tgt){
 
 
 # Load Source and Target Files
-train <- load_src_tgt_file(
-  file_src = "subsamples/train_src_7000.src",
-  file_tgt = "subsamples/train_tgt_7000.tgt"
-)
+train <- read.csv2("subsamples/train_subset_7000.csv", sep = ";")
+test <- read.csv2("subsamples/train_subset_7000.csv", sep = ";")
+valid <- read.csv2("subsamples/train_subset_7000.csv", sep = ";")
 
-
-test <- load_src_tgt_file(
-  file_src = "subsamples/test_src_1000.src",
-  file_tgt = "subsamples/test_tgt_1000.tgt"
-)
-
-
-valid <- load_src_tgt_file(
-  file_src = "subsamples/valid_src_1000.src",
-  file_tgt = "subsamples/valid_tgt_1000.tgt"
-)
 
 
 train_fake <- full_data[1:(which(full_data$fake_summary == "BEGINN_TEST") - 1), ]
@@ -177,20 +165,24 @@ nrow(test_fake) == nrow(test_fake_raw)
 nrow(valid_fake) == nrow(valid_fake_raw)
 
 ### Train Data
-train_prep <- cbind(train, train_fake) %>%
-  filter(fake_summary != "FALSE") %>%
-  select(-id)
+train_prep <- cbind(train, train_fake %>% select(-id)) %>%
+  filter(fake_summary != "FALSE") %>% 
+  filter(fake_summary != "")
 
 
 train_base <- rbind(
-  train_prep %>% select(src, tgt) %>% mutate(label = 0),
-  train_prep %>% select(src, fake_summary_base) %>% mutate(label = 1) %>% rename(tgt = fake_summary_base)
+  train_prep %>% select(article, highlights) %>% mutate(label = 0),
+  train_prep %>% select(article, fake_summary_base) %>% mutate(label = 1) %>% rename(highlights = fake_summary_base)
 )
 
 
-write.csv2(train, "train_data_base.csv")
+write.csv2(train_base, "train_data_base.csv")
 
+sum(train$highlights == "")
+sum(train_base$highlights == "")
+sum(train_prep$fake_summary_base == "")
 
+glimpse(train_base)
 
 
 test <- cbind(test, test_fake) %>%

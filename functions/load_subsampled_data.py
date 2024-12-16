@@ -42,7 +42,7 @@ def load_first_n_rows(n, file_paths):
             subset_df = df.iloc[:n]
 
             # Save the subset to a new CSV file
-            subset_df.to_csv(subset_output_path, index=False)
+            subset_df.to_csv(subset_output_path, index=False, sep= ";")
 
             # Add to the datasets dictionary
             datasets[key] = subset_df
