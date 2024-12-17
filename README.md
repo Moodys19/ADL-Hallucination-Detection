@@ -49,9 +49,6 @@ These subsets were processed by prompting the LLM with the system prompt defined
 
 
 ## Data Quality
-For this experiment ensuring high data quality is critical, as data contaminated with inconsistencies and artifacts can lead to a model that perfectly predicts the labels by learning the artifacts created through contaminated data, i.e. data containing artifacts resulting from the deliberate generation of hallucinations (see chapter **Baseline Model**). For this reason, considerable effort was devoted to cleaning and validating the generated data.
-
-## Data Quality
 Ensuring high data quality is critical for this experiment, as inconsistencies and artifacts in the data can lead to models that learn to predict labels based on these artifacts rather than the actual features. This is particularly relevant for data containing artifacts resulting from the deliberate generation of hallucinations (see chapter **Baseline Model**). For this reason, considerable effort was devoted to cleaning and validating the generated data.
 
 ### Data Cleaning
