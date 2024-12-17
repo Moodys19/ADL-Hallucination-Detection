@@ -36,12 +36,6 @@ Erkläre das mit dem rolling window
 
 Siehe chunk discussion in notion
 
-
-TODO: was würde ich besser machen Kapitel:
-    - größeres BERT
-    - Mehr trainingsdaten
-    - genauer schauen
-
 Warum haben wir das Tiny Bert gewählt?
 
 Discussion Rolling Window -> vielleicht etwas wo wir sicherstellen dass die chunks eine gewisse größe haben
@@ -51,3 +45,11 @@ Discussion Rolling Window -> vielleicht etwas wo wir sicherstellen dass die chun
 
 
 ## Outlook
+
+
+TODO: was würde ich besser machen Kapitel:
+    - größeres BERT
+    - Mehr trainingsdaten
+    - genauer schauen
+
+More sophisticated approach to cleaning the data
