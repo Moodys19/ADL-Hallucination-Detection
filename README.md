@@ -1,9 +1,3 @@
-# TODOs
-
-
-- Vielleicht Kapitel mit dem R file auch
-- welche ERROR METRIC
----
 # Assignment 2 - Hacking
 
 ## Setup & gitignore
