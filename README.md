@@ -29,9 +29,9 @@ In order to implement the proposal from Assignment 1, the project was divided in
 
 - **Baseline**: The baseline project focuses on document-level classification, where the model takes a source text and its corresponding summary as input and predicts whether the summary contains any hallucinations or not.
 
-- **Extension**: This stage extends the baseline by refining the classification from document-level to token-level classification.
+- **Extended**: This stage extends the baseline by refining the classification from document-level to token-level classification.
 
-- **Advanced Stage**: The goal here is to integrate **Semantic Entropy Probes (SEPs)**, as discussed in Assignment 1, into the model to enhance its performance and interpretability.
+- **Advanced**: The goal here is to integrate **Semantic Entropy Probes (SEPs)**, as discussed in Assignment 1, into the model to enhance its performance and interpretability.
 
 For Assignment 2, the primary focus was on implementing the data setup and cleaning pipeline, as well as developing the **Baseline** subproject.
 
@@ -88,57 +88,40 @@ After cleaning, the dataset was restructured, labels were added and the final ou
 
 ## Baseline Model
 
-The goal of the baseline model is to predict on document-level whether a summary contains hallucinations by fine-tuning a transformer-based model. This was achieved using the articles, summaries, and corresponding labels (hallucinated or not). The chosen Error Metric was a validation accuracy of around 0.7. This metric is a result of a lack of experience with such models, as well as the knowledge that the data quality could potentially not be sufficient for a strong model.
+The goal of the baseline model is to predict on document-level whether a summary contains hallucinations by fine-tuning a transformer-based model. This was achieved using the articles, summaries, and corresponding labels (hallucinated or not). The chosen Error Metric was a validation accuracy of around 0.7. This metric is a result of a lack of experience with such models, as well as the knowledge that the data quality could potentially not be sufficient for a strong model. The model was implemented using the file `fine_tune_baseline.ipynb`, the results of the model trained using Google Collab can be found in `fine_tune_baseline_POC.ipynb`.
 
 ### Challenges
 
-#### 1. Sequence Length  
-One of the main challenges was handling the sequence length of the inputs. The **CNN/Daily Mail dataset** consists of long news articles paired with their summaries. Standard transformer models, such as BERT or BERT-tiny, can only process sequences up to a fixed number of 512 tokens  tokens - which would result in a large proportion of the observations being truncated, making the dataset unusable.
+#### **Sequence Length**  
 
+![token length](token_length_overview.png)
 
-To ensure that both the articles and their summaries were included without losing critical information, I implemented the following strategies:  
-- Tokenizing the article and summary together using **BERT's tokenizer**.
-- Truncating sequences when they exceeded the maximum token limit.  
-- Prioritizing the inclusion of as much of the summary as possible to preserve information relevant to hallucination classification.  
+One of the main challenges was handling the sequence length of the inputs. The CNN/Daily Mail dataset consists of long news articles paired with their summaries. Standard transformer models, **BERT-tiny**, can only process sequences up to a maximum of **512 tokens**. This limitation posed a significant challenge, as it would result in a large proportion of the observations being truncated, making the dataset unusable. The distribution of the trainings token lengths can be seen in the plot above.  To ensure that both the articles and their summaries were included without losing critical information, I implemented the following tokenization strategy:
 
-Despite these efforts, truncation led to the loss of some information, which may impact model performance.
+- Initial Tokenization and Length Check:  
+Each article (doc) and summary (summ) pair was tokenized using the **BERT tokenizer**. If the combined length of the article tokens and summary tokens (plus special tokens `[CLS]` and `[SEP]`) fit within the chosen token limit, the pair was included as a single input example.
 
----
+- Chunking Long Summaries:  
+If the full summary exceeded the token limit when paired with the article, I attempted to split the summary into smaller chunks:  
+- Halves: The summary was divided into two equal halves. Each half was checked for compatibility with the token limit when combined with the article. If both halves fit, each was included as a separate input example.  
+- Thirds: If splitting into halves failed, the summary was further divided into three equal parts. Each part was evaluated in the same manner. If all chunks fit within the token limit, they were included as separate examples.  
 
-#### 2. Model Size and Computational Constraints  
-The original model I attempted to use was a standard **BERT-base** model. However, when running on **Google Colab**, the available RAM was insufficient to handle both the model size and the long sequences from the dataset. This issue resulted in out-of-memory (OOM) errors during training.  
+- Handling Non-Chunkable Summaries:  
+If none of the above strategies (full summary, halves, or thirds) succeeded in creating valid inputs within the **512-token limit**, the data point was skipped. These skipped rows were tracked to monitor the proportion of data lost due to tokenization constraints.
 
-To address this, I took the following steps:  
-- Switched to **BERT-tiny**, a much smaller variant of BERT, to fit within the computational limits.  
-- Reduced the **sequence length** to further minimize resource requirements.  
+The tokenization strategy allowed for the inclusion of as much information as possible from both articles and summaries without exceeding the model's input limit. While a portion of the data still had to be skipped (due to excessive sequence lengths), this approach ensured that the majority of the dataset remained usable (with only ~160 observations being dropped for the **2048-token limit**). However, this approach has potential downsides. Dividing summaries into smaller chunks may disrupt the contextual flow of the text, as the relationship between parts of the summary can be lost.
 
-While these changes allowed the model to run, they introduced trade-offs:  
-- The smaller model architecture reduces capacity to learn complex patterns in the data.  
-- Reducing sequence length sacrifices observations by truncating input, further limiting model performance.  
+#### **Model Size and Computational Constraints**  
+The original model I attempted to use was the [Longformer Model](https://huggingface.co/allenai/longformer-base-4096), as it allowed for the needed larger sequence length of **2048**. However, when running on **Google Colab**, the available RAM was insufficient to handle both the model size and the long sequences from the dataset. This issue resulted in out-of-memory (OOM) errors during training. Therefore, I chose the much smaller [BERT-Tiny](https://huggingface.co/prajjwal1/bert-tiny). Unfortunately, this meant that the sequence length had to be reduced, resulting in more observations being left out.  
 
 As a result, this implementation serves as a **proof of concept** rather than a fully optimized model.
 
----
+#### **Model Training and Results**  
+The number of epochs was set to **20**, with an early stopping mechanism after **5 consecutive epochs** without improvement in order to save computational resources. The model achieved a suspiciously strong performance, with early stopping triggered after **12 epochs**. Key results are as follows:  
+- **Training**: Accuracy improved steadily to **97.49%**, but the validation performance plateaued after **epoch 7** at **89.28% accuracy**.  
+- **Testing**: On the test set, the model achieved a loss of **0.260** and an accuracy of **90.18%**. Both precision and recall were well-balanced across the two classes, resulting in a high **F1-score** of **0.91** for the hallucination class. The **AUC** of **0.967** further highlights the model's ability to distinguish between hallucinated and non-hallucinated summaries.  
 
-#### 3. Data Artifacts and Overfitting  
-The results obtained from the baseline model were unexpectedly high, suggesting that the model might have exploited artifacts in the data rather than learning meaningful patterns. These artifacts are likely remnants from the hallucinated summary generation process and cleaning pipeline. Examples include:  
-- Leftover tokens or patterns not fully removed during cleaning.  
-- Irregularities in the fake summaries that the model can detect as "shortcuts" to classify hallucinated data.  
-
-This highlights the importance of further improving the data cleaning process, as discussed in the **Data Quality** chapter. Ensuring that no artifacts remain is crucial for building a model that generalizes well and truly captures the underlying task.
-
----
-
-### Conclusion  
-The baseline model demonstrates the feasibility of fine-tuning transformers for hallucination detection. However, the challenges of sequence length, computational constraints, and lingering data artifacts significantly impacted the approach. While the current results are promising, they are not fully reliable, and further work is needed to optimize both the model and data preprocessing pipeline.
-
+These results are unexpectedly high, suggesting that the model might have exploited **artifacts in the data** rather than learning meaningful patterns. These artifacts are likely remnants from the hallucinated summary generation process and cleaning pipeline.
 
 ## Outlook
-
-
-TODO: was würde ich besser machen Kapitel:
-    - größeres BERT
-    - Mehr trainingsdaten
-    - genauer schauen
-
-More sophisticated approach to cleaning the data
+The next steps focus on improving the data cleansing process to ensure higher data quality and implementing the **extended subproject**. If time permits, I also intend to implement or at least experiment with the **advanced subproject**. Additionally, a small demo application will be developed, and a final report and video will be prepared to summarize the project's outcomes.
