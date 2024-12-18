@@ -44,12 +44,15 @@ An initial data inspection conducted in `initial_data_overview.ipynb` confirmed 
 ### Generating the Hallucinated Data
 For the generation of the hallucinated summary, a Large Language Model (LLM) was used. [together.ai's Free Llama 3.2 11B Vision Model](https://www.together.ai/blog/llama-3-2-vision-stack) was chosen, as it provided a free API with up to 60 requests per minute (RPM). While more advanced APIs, such as Google's Gemini and OpenAI's models, are available, I opted against them due to limited prior experience. Additional experimentation would have been required, and the associated pay-as-you-go tariffs could have become costly. A [price estimation](https://yourgpt.ai/tools/openai-and-other-llm-api-pricing-calculator) was conducted after some testing.  
 
-The generation of hallucinated summaries was conducted through a structured pipeline involving a system prompt - crafted after multiple experiments - used to instruct the LLM on how to modify specific parts of the original summaries, creating “hallucinated” content while retaining the rest of the summary unchanged. The hallucinated passages were explicitly marked using `[B-hallucinated]` and `[E-hallucinated]` tokens to indicate the modified sections. The prompt emphasized maintaining the original summary's length, tone, and grammatical accuracy.
+The generation of hallucinated summaries was conducted through a structured pipeline in the `functions\call_llama.py` file, involving a system prompt crafted after multiple experiments. This prompt was used to instruct the LLM on how to modify specific parts of the original summaries, creating “hallucinated” content while retaining the rest of the summary unchanged. The hallucinated passages were explicitly marked using `[B-hallucinated]` and `[E-hallucinated]` tokens to indicate the modified sections. The prompt emphasized maintaining the original summary's length, tone, and grammatical accuracy.
+
 For example, an original summary stating:  
 *"Harry Potter star Daniel Radcliffe gets £20M fortune as he turns 18 Monday. Young actor says he has no plans to fritter his cash away."*  
-should be transformed into a hallucinated version:  
+
+is transformed into a hallucinated version:  
 *"Harry Potter star [B-hallucinated]loses fortune[E-hallucinated] as he turns 18 Monday. Young actor says he [B-hallucinated]plans to fritter[E-hallucinated] his cash away."*
-Each row of the input data was processed sequentially. The input consisted of the source text and its corresponding summary, which were combined into a formatted prompt. To comply with the API rate limits, the processing time per request was regulated to approximately one second.
+
+Each row of the input data was processed sequentially. The input consisted of the source text and its corresponding summary, which were combined into a formatted prompt. To comply with API rate limits, the processing time per request was regulated to approximately one second.
 
 ## Data Quality
 Ensuring high data quality is critical for this experiment, as inconsistencies and artifacts in the data can lead to models that learn to predict labels based on these artifacts rather than the actual features. This is particularly relevant for data containing artifacts resulting from the deliberate generation of hallucinations (see chapter **Baseline Model**). For this reason, considerable effort was devoted to cleaning and validating the generated data.
@@ -72,12 +75,10 @@ To generate hallucinated summaries, I experimented with various system prompts t
    - Redundant spaces and inconsistent capitalization  
 
 
-These errors affected more than half the entries. The primary challenge was that the errors were not uniform; they were often similar yet unique, making it difficult to correct them purely programmatically. The script applied regex-based transformations to standardize and clean the tokens wherever possible, ensuring that no token-related artifacts remained in the cleaned dataset. To implement, validate and monitor the cleanse, most of the data was manually inspected. Despite the considerable time invested in addressing the inconsistencies and artifacts, the results presented in the **Baseline Model** chapter indicate that further cleaning is required to ensure the removal of all artifacts and inconsistencies.  
-
-After cleaning, the dataset was restructured, labels were added and the final outputs for training, test, and validation splits were saved into:  
-- `train_data_base.csv`  
-- `test_data_base.csv`  
-- `valid_data_base.csv`  
+These errors affected more than half the entries. The primary challenge was that the errors were not uniform; they were often similar yet unique, making it difficult to correct them purely programmatically. The script applied regex-based transformations to standardize and clean the tokens wherever possible, ensuring that no token-related artifacts remained in the cleaned dataset. To implement, validate and monitor the cleanse, most of the data was manually inspected. Despite the considerable time invested in addressing the inconsistencies and artifacts, the results presented in the **Baseline Model** chapter indicate that further cleaning is required to ensure the removal of all artifacts and inconsistencies.  Finally, after cleaning and removing the tokens for the document level classification, the dataset was restructured, labels were added and the final outputs for training, test, and validation splits were saved into:  
+- `cnndm/train_data_base.csv`  
+- `cnndm/test_data_base.csv`  
+- `cnndm/valid_data_base.csv`  
 
 
 ## Baseline Model
@@ -118,6 +119,7 @@ The number of epochs was set to **20**, with an early stopping mechanism after *
 These results are unexpectedly high, suggesting that the model might have exploited **artifacts in the data** rather than learning meaningful patterns. These artifacts are likely remnants from the hallucinated summary generation process and cleaning pipeline.
 
 ## Outlook
-The next steps focus on improving the data cleansing process to ensure higher data quality. Further experimentation with the system plot will be conducted in order to reduce the data quality issues. One approach is to further investigate the effect of the creativity setting (temperature) on the hallucinations of the LLM used in the data generation.
- After that, I aim to implement the **extended subproject**. If time permits, I also intend to implement or at least experiment with the **advanced subproject**. Additionally, a small demo application will be developed, and a final report and video will be prepared to summarize the project's outcomes.
+The next steps focus on improving the data cleansing process to ensure higher data quality. Further experimentation with the system prompt will be conducted to reduce data quality issues. One approach is to investigate the effect of the creativity setting (temperature) on the hallucinations generated by the LLM during data generation.
+
+Following this, I aim to implement the **extended subproject**. If time permits, I also intend to implement or at least experiment with the **advanced subproject**. Additionally, a small demo application will be developed, and a final report and video will be prepared to summarize the project's outcomes.
 
