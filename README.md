@@ -123,3 +123,16 @@ The next steps focus on improving the data cleansing process to ensure higher da
 
 Following this, I aim to implement the **extended subproject**. If time permits, I also intend to implement or at least experiment with the **advanced subproject**. Additionally, a small demo application will be developed, and a final report and video will be prepared to summarize the project's outcomes.
 
+
+## Time log 
+
+| Task Description                                                       | Time Spent (hours) |
+|------------------------------------------------------------------------|-------------------:|
+| Initial analysis of dataset                                            | 0.5               |
+| Research and experiments with various LLM APIs                         | 8                |
+| Prompt engineering and generation of hallucinated summaries            | 23                |
+| Data cleaning and validating data quality                              | 13                |
+| Model research                                                         | 3                 |
+| Implementing, debugging and running baseline model pipeline                     | 11                |
+| Experimentation with tokenization approaches                           | 2                 |
+| Documentation and preparation of project report                        | 2.5               |
