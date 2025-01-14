@@ -61,7 +61,7 @@ def generate_chat_completion(
     return response
 
 
-def create_hallucinated_summaries(df, source_col, target_col, output_file_name):
+def create_hallucinated_summaries(df, source_col, target_col, output_file_name, add_tokens = False):
     """
     Generate hallucinated summaries for each row of the DataFrame using an LLM and save them in a new column.
     
@@ -93,26 +93,46 @@ def create_hallucinated_summaries(df, source_col, target_col, output_file_name):
     hallucinated_summaries = []
 
     # Define the system prompt
-    system_prompt = (
-        "You are a creative summarization assistant. Your task is to create hallucinated summaries of text. "
-        "For each given input summary, you should: "
-        "1. Change only specific passages of the original text to hallucinated information while keeping the rest accurate. "
-        "2. Ensure the length of the hallucinated summary matches the original summary exactly, with no additional or fewer words. "
-        "3. Retain the structure, tone, and grammatical accuracy of the original summary. "
-        "4. Only return the hallucinated summary as output, without any additional explanations or comments. "
-        "5. Mark the hallucinated passages with special tokens: "
-        "[B-hallucinated] before the hallucinated text and [E-hallucinated] after the hallucinated text."
-        
-        "\n\nExample: "
-        "Original Summary: 'Harry Potter star Daniel Radcliffe gets £20M fortune as he turns 18 Monday. "
-        "Young actor says he has no plans to fritter his cash away. Radcliffe's earnings from the first five Potter films have been held in a trust fund.' "
-        "\nHallucinated Summary: 'Harry Potter star [B-hallucinated]loses fortune[E-hallucinated] as he turns 18 Monday. "
-        "Young actor says he [B-hallucinated]has plans[E-hallucinated] to fritter his cash away. Radcliffe's earnings from the first five Potter films have been "
-        "[B-hallucinated]spent entirely[E-hallucinated].' "
-        "\n\nMake sure to hallucinate only parts of the summary while leaving some parts accurate."
-        "Please make sure to mark everything correctly!"
-        "Make sure to only return the hallucinated summary"
-    )
+
+    if add_tokens:
+        system_prompt = (
+            "You are a creative summarization assistant. Your task is to create hallucinated summaries of text. "
+            "For each given input summary, you should: "
+            "1. Change only specific passages of the original text to hallucinated information while keeping the rest accurate. "
+            "2. Ensure the length of the hallucinated summary matches the original summary exactly, with no additional or fewer words. "
+            "3. Retain the structure, tone, and grammatical accuracy of the original summary. "
+            "4. Only return the hallucinated summary as output, without any additional explanations or comments. "
+            "5. Mark the hallucinated passages with special tokens: "
+            "[B-hallucinated] before the hallucinated text and [E-hallucinated] after the hallucinated text."
+            
+            "\n\nExample: "
+            "Original Summary: 'Harry Potter star Daniel Radcliffe gets £20M fortune as he turns 18 Monday. "
+            "Young actor says he has no plans to fritter his cash away. Radcliffe's earnings from the first five Potter films have been held in a trust fund.' "
+            "\nHallucinated Summary: 'Harry Potter star [B-hallucinated]loses fortune[E-hallucinated] as he turns 18 Monday. "
+            "Young actor says he [B-hallucinated]has plans[E-hallucinated] to fritter his cash away. Radcliffe's earnings from the first five Potter films have been "
+            "[B-hallucinated]spent entirely[E-hallucinated].' "
+            "\n\nMake sure to hallucinate only parts of the summary while leaving some parts accurate."
+            "Please make sure to mark everything correctly!"
+            "Make sure to only return the hallucinated summary"
+        )
+    else:
+        system_prompt =(
+            "You are a creative summarization assistant. Your task is to generate hallucinated summaries of input text. A hallucinated summary alters specific details in the original text to include fabricated information while leaving other parts accurate."
+            "For each input summary, follow these instructions:"
+            "1. Change specific passages to hallucinated information while ensuring the rest of the text remains accurate."
+            "2. Ensure the hallucinated summary is the exact same length as the original, with no additional or fewer words."
+            "3. Retain the structure, tone, and grammatical accuracy of the original summary."
+            "4. Avoid adding any meta-comments, such as 'Here is the hallucinated summary,' or any pretext. Provide only the hallucinated summary as output, with no explanations, comments, or pretext"
+            "Example:"
+            "Original Summary:"
+            "'Harry Potter star Daniel Radcliffe gets £20M fortune as he turns 18 Monday. Young actor says he has no plans to fritter his cash away. Radcliffe's earnings from the first five Potter films have been held in a trust fund.'"
+            "Hallucinated Summary: "
+            "'Harry Potter star loses fortune as he turns 18 Monday. Young actor says he has plans to fritter his cash away. Radcliffe's earnings from the first five Potter films have been spent entirely.'"
+            "\n\n Make sure to:"
+            "Hallucinate only parts of the summary while leaving some parts accurate."
+            "Produce an output that feels natural and coherent."
+            "Return only the hallucinated summary as output, without explanations or additional comments."
+        )
 
     total_rows = len(df)
     rate_limit = 55  # Maximum allowed requests per minute
@@ -134,8 +154,8 @@ def create_hallucinated_summaries(df, source_col, target_col, output_file_name):
         response = generate_chat_completion(
             model_name="meta-llama/Llama-Vision-Free",
             messages=messages,
-            max_tokens= 500,  # Allow room for hallucination
-            temperature=0.9,
+            max_tokens= 500,  
+            temperature=0.5, # Allow room for hallucination
             top_p=0.9,
             top_k=40,
             repetition_penalty=1.2,
