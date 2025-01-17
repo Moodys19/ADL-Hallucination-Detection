@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-def load_first_n_rows(n, file_paths):
+def load_n_rows(n, file_paths, start = 0):
     """
     Select the first n rows from train, test, and valid datasets stored in CSV files.
 
@@ -39,7 +39,7 @@ def load_first_n_rows(n, file_paths):
 
             # Load the CSV and select the first n rows
             df = pd.read_csv(file_path, sep = ";")
-            subset_df = df.iloc[:n]
+            subset_df = df.iloc[start:n]
 
             # Save the subset to a new CSV file
             subset_df.to_csv(subset_output_path, index=False, sep= ";")
