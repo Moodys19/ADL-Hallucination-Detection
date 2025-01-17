@@ -30,9 +30,9 @@ full_data_raw <- rbind(train_raw, "BEGINN_TEST",
 
 
 ### Load Fake Summaries
-train_fake_raw <- read.csv("fake_summary/train_hallucinated.csv")
-test_fake_raw <- read.csv("fake_summary/test_hallucinated.csv")
-valid_fake_raw <- read.csv("fake_summary/val_hallucinated.csv")
+train_fake_raw <- read.csv("fake_summary/train_hallucinated_base.csv")
+test_fake_raw <- read.csv("fake_summary/test_hallucinated_base.csv")
+valid_fake_raw <- read.csv("fake_summary/val_hallucinated_base.csv")
 
 full_data_fake <- rbind(train_fake_raw, "BEGINN_TEST",
                    test_fake_raw, "BEGINN_VAL", 
@@ -46,12 +46,41 @@ sum(full_data$fake_summary == "")
 all(full_data$id == full_data$id_fake)
 
 
+######### Base Analysis ----
+
+check_add_info <- full_data %>%
+  mutate(
+    fake_summary = gsub("Note.*$", "", fake_summary),
+    # ACHTUNG das FALSE wird zu einem string
+    fake_summary = ifelse(grepl("I cannot (create|fulfill|provide)", fake_summary, ignore.case = TRUE), FALSE, fake_summary), 
+    fake_summary = ifelse(grepl("I can't (create|fulfill|provide)", fake_summary, ignore.case = TRUE), FALSE, fake_summary), 
+    fake_summary = ifelse(grepl("I can’t (create|fulfill|provide)", fake_summary, ignore.case = TRUE), FALSE, fake_summary),
+    fake_summary = ifelse(grepl("halluci", fake_summary, ignore.case = TRUE), FALSE, fake_summary),
+    fake_summary = ifelse(grepl("original passage", fake_summary, ignore.case = TRUE), FALSE, fake_summary),
+    fake_summary = ifelse(grepl("i'm unable to", fake_summary, ignore.case = TRUE), FALSE, fake_summary),
+    fake_summary = gsub("I've altered .*?:", "", fake_summary)
+    
+  ) %>%
+  filter(
+    grepl("halluci", fake_summary, ignore.case = TRUE)
+         
+  ) %>%
+  select(fake_summary)
+
+
+
+
+
+
+
+
+
 ######### Check additional text ----
 
 #table(grepl("Here is", train_fake$fake_summary_clean))
 
 check_add_info <- full_data %>%
-  filter(grepl("Here is", fake_summary) | grepl("hallucination", fake_summary)) %>%
+  filter(grepl(, fake_summary) | grepl("hallucination", fake_summary)) %>%
   mutate(
     fake_summary = gsub("Here is the .*?:", "", fake_summary),
     fake_summary = gsub("Here is a .*?:", "", fake_summary),
