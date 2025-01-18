@@ -1,3 +1,5 @@
+import torch
+
 # Tokenize and calculate token lengths
 def calculate_lengths(data, tokenizer, column_name):
     lengths = []
@@ -5,9 +7,6 @@ def calculate_lengths(data, tokenizer, column_name):
         tokens = tokenizer.tokenize(text)
         lengths.append(len(tokens))
     return lengths
-
-
-
 
 # Calculate token lengths for each dataset
 def filter_rows_by_length(dataset, tokenizer, max_length=512):
