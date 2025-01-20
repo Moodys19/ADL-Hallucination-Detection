@@ -12,31 +12,47 @@ library(stringr)
 ######### Data Loading ----
 
 # Load Source and Target Files
-train_raw <- read.csv2("subsamples/train_subset_7000.csv", sep = ";")
-test_raw <- read.csv2("subsamples/test_subset_1000.csv", sep = ";")
-valid_raw <- read.csv2("subsamples/valid_subset_1000.csv", sep = ";")
+train_raw <- read.csv2("subsamples/train_subset_7000.csv", sep = ";") %>%
+  filter(!grepl("^#", highlights)) # highlights starting '#' are skipped by the LLM
 
-issues <- rbind(test_raw[c(306, 847),], valid_raw[29, ])
-# Probleme mit Zeilen wo die Summary mit # anfängt
+test_raw <- read.csv2("subsamples/test_subset_1000.csv", sep = ";")%>%
+  filter(!grepl("^#", highlights))
 
-test_raw <- test_raw[-c(306, 847), ]
-valid_raw <- valid_raw[-29, ]
+valid_raw <- read.csv2("subsamples/valid_subset_1000.csv", sep = ";") %>%
+  filter(!grepl("^#", highlights))
+
+inf_raw <- read.csv2("subsamples/inference_subset_1100.csv", sep = ";")%>%
+  filter(!grepl("^#", highlights))
+
+
+
 
 full_data_raw <- rbind(train_raw, "BEGINN_TEST",
                        test_raw, "BEGINN_VAL", 
-                       valid_raw) %>%
+                       valid_raw, "BEGINN_INF",
+                       inf_raw) %>%
   mutate(id = 1:nrow(.)) %>%
   select(highlights, id)
 
 
 ### Load Fake Summaries
 train_fake_raw <- read.csv("fake_summary/train_hallucinated_base.csv")
+nrow(train_fake_raw)
+
 test_fake_raw <- read.csv("fake_summary/test_hallucinated_base.csv")
+nrow(test_fake_raw)
+
 valid_fake_raw <- read.csv("fake_summary/val_hallucinated_base.csv")
+nrow(valid_fake_raw)
+
+inf_fake_raw <- read.csv("fake_summary/inf_hallucinated_base.csv")
+nrow(inf_fake_raw)
+
 
 full_data_fake <- rbind(train_fake_raw, "BEGINN_TEST",
                    test_fake_raw, "BEGINN_VAL", 
-                   valid_fake_raw)
+                   valid_fake_raw, "BEGINN_INF", 
+                   inf_fake_raw)
 full_data_fake$id_fake <- 1:nrow(full_data_fake)
 
 
@@ -51,11 +67,12 @@ all(full_data$id == full_data$id_fake)
 cleaned_data <- full_data %>%
   mutate(
     fake_summary_base = gsub("Note.*$", "", fake_summary),
+    
     # ACHTUNG das FALSE wird zu einem string
     fake_summary_base = ifelse(grepl("I cannot (create|fulfill|provide)", fake_summary_base, ignore.case = TRUE), FALSE, fake_summary_base), 
     fake_summary_base = ifelse(grepl("I can't (create|fulfill|provide)", fake_summary_base, ignore.case = TRUE), FALSE, fake_summary_base), 
     fake_summary_base = ifelse(grepl("I can’t (create|fulfill|provide)", fake_summary_base, ignore.case = TRUE), FALSE, fake_summary_base),
-    fake_summary_base = ifelse(grepl("halluci", fake_summary_base, ignore.case = TRUE), FALSE, fake_summary),
+    fake_summary_base = ifelse(grepl("halluci", fake_summary_base, ignore.case = TRUE), FALSE, fake_summary_base),
     fake_summary_base = ifelse(grepl("original passage", fake_summary_base, ignore.case = TRUE), FALSE, fake_summary_base),
     fake_summary_base = ifelse(grepl("i'm unable to", fake_summary_base, ignore.case = TRUE), FALSE, fake_summary_base),
     fake_summary_base = gsub("I've altered .*?:", "", fake_summary_base),
@@ -72,7 +89,8 @@ full_data <- cleaned_data %>% select(-id_fake, -highlights)
 
 train_fake <- full_data[1:(which(full_data$fake_summary == "BEGINN_TEST") - 1), ]
 test_fake <- full_data[(which(full_data$fake_summary == "BEGINN_TEST") + 1):(which(full_data$fake_summary == "BEGINN_VAL") - 1), ]
-valid_fake <- full_data[(which(full_data$fake_summary == "BEGINN_VAL") + 1):nrow(full_data), ]
+valid_fake <- full_data[(which(full_data$fake_summary == "BEGINN_VAL") + 1):(which(full_data$fake_summary == "BEGINN_INF") - 1), ]
+inf_fake <- full_data[(which(full_data$fake_summary == "BEGINN_INF") + 1):nrow(full_data), ]
 
 nrow(train_fake) == nrow(train_fake_raw)
 nrow(test_fake) == nrow(test_fake_raw)
@@ -133,6 +151,18 @@ valid_base <- rbind(
 )
 
 write.csv2(valid_base, "valid_data_base.csv")
+
+### Inf Data
+inference_data <- cbind(inf_raw, inf_fake %>% select(-id)) %>%
+  filter(fake_summary != "FALSE" & fake_summary_base != "FALSE") %>% 
+  select(article, highlights, fake_summary_base) %>%
+  rename(hallucinated_highlight = fake_summary_base)
+
+sum(inference_data$highlights == "")
+sum(inference_data$hallucinated_highlight == "")
+
+write.csv2(valid_base, "inference_data.csv")
+
 
 
 
