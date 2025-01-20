@@ -161,7 +161,7 @@ inference_data <- cbind(inf_raw, inf_fake %>% select(-id)) %>%
 sum(inference_data$highlights == "")
 sum(inference_data$hallucinated_highlight == "")
 
-write.csv2(valid_base, "inference_data.csv")
+write.csv2(inference_data, "inference_data.csv")
 
 
 

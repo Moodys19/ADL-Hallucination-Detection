@@ -2,6 +2,17 @@ import torch
 
 # Tokenize and calculate token lengths
 def calculate_lengths(data, tokenizer, column_name):
+    """
+    Calculates the token lengths for each text in the specified column of a dataset.
+
+    Args:
+        data (pd.DataFrame): The dataset containing the text data.
+        tokenizer (Tokenizer): The tokenizer to tokenize the text.
+        column_name (str): The name of the column in the dataset containing the text to tokenize.
+
+    Returns:
+        list: A list of integers representing the token lengths for each text entry.
+    """
     lengths = []
     for text in data[column_name]:
         tokens = tokenizer.tokenize(text)
@@ -30,6 +41,22 @@ def filter_rows_by_length(dataset, tokenizer, max_length=512):
 
 # Training function
 def train_epoch(model, data_loader, optimizer, criterion, device):
+    """
+    Executes a single training epoch for the given model.
+
+    Args:
+        model (torch.nn.Module): The PyTorch model to be trained.
+        data_loader (DataLoader): DataLoader providing batches of input data.
+        optimizer (torch.optim.Optimizer): Optimizer to update model parameters.
+        criterion (torch.nn.Module): Loss function to compute the error.
+        device (torch.device): Device ('cpu' or 'cuda') where computations are performed.
+
+    Returns:
+        tuple: 
+            - (float) Accuracy for the epoch (correct predictions / total samples).
+            - (float) Average loss for the epoch.
+    """
+
     model.train()
     losses = []
     correct_predictions = 0
@@ -57,6 +84,21 @@ def train_epoch(model, data_loader, optimizer, criterion, device):
     return correct_predictions.double() / len(data_loader.dataset), sum(losses) / len(losses)
 
 def eval_model(model, data_loader, criterion, device):
+    """
+    Evaluates the performance of the given model on a dataset.
+
+    Args:
+        model (torch.nn.Module): The PyTorch model to evaluate.
+        data_loader (DataLoader): DataLoader providing batches of input data for evaluation.
+        criterion (torch.nn.Module): Loss function to compute the error.
+        device (torch.device): Device ('cpu' or 'cuda') where computations are performed.
+
+    Returns:
+        tuple: 
+            - (float) Accuracy of the model (correct predictions / total samples).
+            - (float) Average loss over the dataset.
+    """
+
     model.eval()
     losses = []
     correct_predictions = 0
