@@ -37,7 +37,7 @@ To address this limitation, a new subset of the [CNN/Daily Mail (CNNDM) dataset]
 
 The number of epochs used for training remained unchanged at 20, with an early stopping mechanism triggered after 5 consecutive epochs without improvement. While the model took longer to converge in this iteration (11 epochs compared to 7 in Assignment 2), the overall results remained similar. However, inference yielded noticeably better outcomes, as initial inference experiments with the previous model always resulted in a non-hallucination detection. A closer discussion of the results and inference can be found in the report [TODO HIER DAS FILE LINKEN].
 
-Due to the tight time frame and the primary focus on document-level detection, only limited experimentation with token-level detection was possible. Implementing token-level detection, along with extending the approach to include SEPs, would require a highly detailed data cleansing process to address the challenges posed by the LLM in generating accurate tokens, as well as a more refined tokenization strategy. However, these steps were not feasible within the available time frame.
+Due to the tight time frame and the primary focus on document-level detection, only limited experimentation with token-level detection was possible. The small amount of experimentation can be found in the `Ext-Experimentation` folder, though **this does not count as part of the submission but only as an addition**. Implementing token-level detection, along with extending the approach to include SEPs, would require a highly detailed data cleansing process to address the challenges posed by the LLM in generating accurate tokens, as well as a more refined tokenization strategy. However, these steps were not feasible within the available time frame.
 
 ## Inference using REST API and Webapp 
 
@@ -76,6 +76,6 @@ streamlit run webapp.py
 | Resample, clean, and run new document-level detection approach         | 3 (+ 14 runtime for fake summary creation) |
 | Research and implement web app                                         | 2                  |
 | Research and implement REST API                                        | 2                  |
-| Clean-up, documentation, report, and presentation preparation          | X                  |
-| Video: research, finding the courage, filming, and editing             | X                  |
+| Clean-up, documentation, report, and presentation preparation          | 2                  |
+| Video: research, finding the courage, filming, and editing             | 1.5                  |
 
