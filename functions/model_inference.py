@@ -19,7 +19,7 @@ def load_model():
     return model, tokenizer
 
 
-def prepare_input_consistent(doc, summ, tokenizer, max_length=512):
+def prepare_input(doc, summ, tokenizer, max_length=512):
     """
     Tokenize input tensors using the chunking logic applied in the training.
 
@@ -62,6 +62,7 @@ def prepare_input_consistent(doc, summ, tokenizer, max_length=512):
         "attention_mask": torch.tensor([attention_mask], dtype=torch.long)
     }
 
+
 def predict(text, summary, model, tokenizer):
     """
     Generate class prediction and probability distribution for a given document-summary pair.
@@ -78,7 +79,7 @@ def predict(text, summary, model, tokenizer):
             - (torch.Tensor): Probabilities of each class as a tensor of shape [1, num_classes].
     """
 
-    inputs = prepare_input_consistent(text, summary, tokenizer, max_length=512)
+    inputs = prepare_input(text, summary, tokenizer, max_length=512)
     input_ids = inputs["input_ids"]
     attention_mask = inputs["attention_mask"]
 

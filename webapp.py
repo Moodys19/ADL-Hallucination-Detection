@@ -6,7 +6,7 @@ from functions.model_inference import load_model, predict
 def get_cached_model():
     return load_model()
 
-model, tokenizer = get_cached_model()
+
 
 
 def display_probability(probabilities):
@@ -22,27 +22,29 @@ def display_probability(probabilities):
     st.write(f"Hallucination Probability: {hallucination_prob * 100:.2f}%")
     st.progress(hallucination_prob)
 
-    
-# Streamlit app UI
-st.title("Document-Level Hallucination Detection")
-st.write("This application detects whether the provided summary contains hallucinations based on the article.")
+if __name__ == "__main__":    
+    # Streamlit app UI
+    st.header("Document-Level Hallucination Detection")
+    st.write("This application estimates the probability that a summary contains hallucinations based on the corresponding article.")
 
-article = st.text_area("Input Article", "", height=300)
-summary = st.text_area("Input Summary", "", height=150)
 
-if st.button("Check for Hallucinations"):
-    if not article or not summary:
-        st.error("Both article and summary are required.")
-    else:
-        with st.spinner("Analyzing..."):
-            prediction, probabilities = predict(article, summary, model, tokenizer)
+    model, tokenizer = get_cached_model()
+    article = st.text_area("Input Article", "", height=300)
+    summary = st.text_area("Input Summary", "", height=150)
 
-        if prediction == 0:
-            st.success("The summary appears to be consistent with the article.")
+    if st.button("Check for Hallucinations"):
+        if not article or not summary:
+            st.error("Both article and summary are required.")
         else:
-            st.warning("The summary may contain hallucinations.")
+            with st.spinner("Analyzing..."):
+                prediction, probabilities = predict(article, summary, model, tokenizer)
 
-        display_probability(probabilities)
+            if prediction == 0:
+                st.success("The summary appears to be consistent with the article.")
+            else:
+                st.warning("The summary may contain hallucinations.")
+
+            display_probability(probabilities)
 
 
 # Run using
