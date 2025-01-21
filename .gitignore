@@ -8,5 +8,5 @@ cnndm/
 # ignore the data files
 models/
 
-# ignore apy call
+# ignore api call
 #functions/call_llama.py
