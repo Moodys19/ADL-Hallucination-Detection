@@ -4,7 +4,7 @@
 The following files and folders are included in the `.gitignore` file due to their large size or sensitive nature:
 
 - **`cnndm/`**: This folder is used for storing data, including intermediate and cleaned files.  
-- **`models/`**: This folder is used to store trained models.  
+- **`models/`**: This folder is used to store trained models and is needed for both the REST API and the Webapp.  
 - **`get_api_key.py`**: This file contains the API key used for the LLM in the **Gathering the Data**  Chapter and looks as follows:
 
 
@@ -25,11 +25,11 @@ To address this limitation, a new subset of the [CNN/Daily Mail (CNNDM) dataset]
 
 <div style="display: flex; justify-content: space-between; align-items: center;">
   <figure style="text-align: center; width: 45%;">
-    <img src="Assignment Readmes\token_length_overview.png" alt="Image 1" style="width: 100%;">
+    <img src="assignment_readmes\token_length_overview.png" alt="Image 1" style="width: 100%;">
     <figcaption>Token Length Distribution for Assignment 2 Data</figcaption>
   </figure>
   <figure style="text-align: center; width: 45%;">
-    <img src="Assignment Readmes\token_length_overview_limited.png" alt="Image 2" style="width: 100%;">
+    <img src="assignment_readmes\token_length_overview_limited.png" alt="Image 2" style="width: 100%;">
     <figcaption>Token Length Distribution after Restriction</figcaption>
   </figure>
 </div>
@@ -41,15 +41,41 @@ Due to the tight time frame and the primary focus on document-level detection, o
 
 ## Inference using REST API and Webapp 
 
+As outlined in the assignment requirements, the primary focus of Assignment 3, in addition to the presentation and final report, was the development of a demo application. To achieve this, both a REST API and a web application were implemented. Both applications query the fine-tuned BERT-Tiny model using the `functions/model_inference.py` file. Ensure that the fine-tuned model is stored in a subfolder named **models**, as described above.
 
-## Time Log
+The REST API was built using the Fast API framework and is designed for potential integration with external systems. It accepts input data in the form of JSON payloads and returns predictions along with associated probabilities in a JSON format. The API can be accessed and tested locally as follows:
+
+```bash
+conda activate adl_project # not neccessary if env is already activated
+uvicorn rest_api:app --reload
+
+# using the browser or curl in a second terminal
+curl http://127.0.0.1:8000/
+curl -X POST "http://127.0.0.1:8000/predict" \
+-H "Content-Type: application/json" \
+-d '{"document": "input document","summary": "input Summary"}'
+
+```
+
+To provide a more user-friendly interface for the presentation, a web application was implemented using the Streamlit library. The interface allows users to input both an article and a summary and returns either a positive or negative detection result, along with the associated probability. The web application can be launched using the following commands:
+
+```bash
+conda activate adl_project # not neccessary if env is already activated
+streamlit run webapp.py
+```
+
+<div style="text-align: center;">
+  <img src="assignment_readmes/webapp_example.png" alt="webapp" style="width: 50%; height: auto;">
+</div>
+
+## Time Log - Assignment 3
 | Task Description                                                       | Time Spent (hours) |
 |------------------------------------------------------------------------|-------------------:|
 | Experimentation with system prompt and temperature parameter           | 1.5                |
 | Superficial token-level detection experimentation (and data cleaning)  | 1                  |
 | Resample, clean, and run new document-level detection approach         | 3 (+ 14 runtime for fake summary creation) |
-| Research and implement web app                                         | X                  |
-| Research and implement REST API                                        | X                  |
-| Documentation, report, and presentation preparation                    | X                  |
-| Video: finding the courage, filming, and editing                       | X                  |
+| Research and implement web app                                         | 2                  |
+| Research and implement REST API                                        | 2                  |
+| Clean-up, documentation, report, and presentation preparation          | X                  |
+| Video: research, finding the courage, filming, and editing             | X                  |
 

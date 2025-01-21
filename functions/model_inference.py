@@ -13,7 +13,7 @@ def load_model():
 
     tokenizer = BertTokenizer.from_pretrained("prajjwal1/bert-tiny")
     model = BertForSequenceClassification.from_pretrained("prajjwal1/bert-tiny", num_labels=2)
-    model.load_state_dict(torch.load('models/best_model_state.bin'))
+    model.load_state_dict(torch.load('models/best_model_state.bin', weights_only=True))
     model.eval()
 
     return model, tokenizer
